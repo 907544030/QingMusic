@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>轻·听</title>
+		<link href="//cdn.bootcss.com/bootstrap/4.0.0-alpha.4/css/bootstrap.min.css" rel="stylesheet">
+		<style>
+			body,
+			html,
+			a {
+				font-family: "Helvetica Neue", Helvetica, Microsoft Yahei, Hiragino Sans GB, WenQuanYi Micro Hei, sans-serif;
+			}
+			
+			.left {
+				width: 650px;
+				height: 100%;
+				position: fixed;
+				overflow-y: auto;
+				background: #191818;
+				color: #fff;
+			}
+			
+			.album {
+				width: 350px;
+				margin: 20px auto;
+			}
+			
+			.album img {
+				width: 100%;
+			}
+			
+			.page {
+				margin-left: 650px;
+			}
+			
+			.text-white {
+				color: #fff;
+			}
+			
+			.center-block {
+				margin: 0 auto;
+				display: block;
+			}
+			
+			.jp-audio {
+				position: absolute;
+				bottom: 0;
+				width: 100%;
+			}
+			
+			.jp-seek-bar {
+				height: 10px;
+				background: rgba(255, 255, 255, .4);
+			}
+			
+			.jp-play-bar {
+				height: 10px;
+				background: rgb(255, 255, 255);
+				width: 0;
+			}
+			
+			.bg-blur {
+				filter: blur(10px);
+				-webkit-filter: blur(10px);
+				-ms-filter: blur(10px);
+				-moz-filter: blur(10px);
+				filter: progid: DXImageTransform.Microsoft.Blur(pixelRadius=10, MakeShadow=false);
+				z-index: -3;
+			}
+			
+			.bg {
+				position: absolute;
+				height: 100%;
+				width: 100%;
+				z-index: -1;
+				background: rgba(0, 0, 0, .5);
+			}
+			
+			.jp-volume-bar {
+				background: rgba(255, 255, 255, 0.1);
+				cursor: pointer;
+			}
+			
+			.jp-seek-bar {
+				cursor: pointer;
+			}
+			
+			.jp-current-time,
+			.jp-duration {
+				width: 100px;
+				padding: 20px;
+			}
+			
+			.jp-current-time {
+				float: left;
+				display: inline;
+				cursor: default;
+			}
+			
+			.jp-duration {
+				float: right;
+				display: inline;
+				text-align: right;
+				cursor: pointer;
+			}
+			
+			.jp-type-single .jp-play {
+				font-family: 'FontAwesome';
+				border-radius: 50%;
+				border: 1px solid rgba(255, 255, 255, .9);
+				width: 60px;
+				height: 60px;
+				color: #fff;
+				margin-bottom: 10px;
+				text-decoration: none;
+			}
+			
+			.jp-type-single .jp-play:after {
+				content: "\f04b";
+			}
+			
+			.jp-type-single .jp-play:hover {
+				color: rgba(255, 255, 255, .6);
+				border: 1px solid rgba(255, 255, 255, .6);
+			}
+			
+			.jp-state-playing .jp-type-single .jp-play:after {
+				font-family: 'FontAwesome';
+				content: "\f04c";
+			}
+			
+			.jp-state-playing .jp-type-single .jp-play:hover {
+				color: rgba(255, 255, 255, .6);
+				border: 1px solid rgba(255, 255, 255, .6);
+			}
+		</style>
+	</head>
+
+	<body>
+
+		<div class="left" style="background: url(pic_wallpaper_12.jpg) 50% 100% / 100% 100%;">
+			<img class="bg-blur bg" src="pic_wallpaper_12.jpg" />
+			<div class="bg"></div>
+
+			<div class="album">
+				<img src="logo.png" /></div>
+			<h2 class="text-white text-xs-center">轻·听·音·悦</h2>
+			<div id="jquery_jplayer" class="jp-jplayer"></div>
+			<div id="jp_container_1" class="jp-audio" role="application" aria-label="media player">
+				<div class="jp-type-single">
+					<div class="jp-gui jp-interface">
+						<!--
+						<div class="jp-volume-controls">
+							<button class="jp-mute" role="button" tabindex="0">mute</button>
+							<button class="jp-volume-max" role="button" tabindex="0">max volume</button>
+							<div class="jp-volume-bar">
+								<div class="jp-volume-bar-value"></div>
+							</div>
+						</div>
+                        -->
+
+						<div class="jp-controls-holder">
+							<div class="jp-controls">
+								<button class="jp-play center-block text-xs-center btn btn-link" role="button" tabindex="0"></button>
+							</div>
+
+							<div class="jp-progress">
+								<div class="jp-seek-bar">
+									<div class="jp-play-bar"></div>
+								</div>
+							</div>
+							<div class="jp-current-time" role="timer" aria-label="time">&nbsp;</div>
+							<div class="jp-duration" role="timer" aria-label="duration">&nbsp;</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="page">
+			<div class="container">
+				<h1 class="display-1 text-xs-center">轻·听</h1>
+				<div class="input-group">
+					<input type="text" class="form-control" placeholder="输入歌曲名" id="keyword" autocomplete="off">
+					<span class="input-group-btn">
+					<button id="search" class="btn btn-primary">搜索</button>
+					</span>
+				</div>
+				<table class="table table-hover">
+					<thead>
+						<tr>
+							<th>音乐标题</th>
+							<th>歌手</th>
+							<th>专辑</th>
+
+						</tr>
+					</thead>
+					<tbody id="list"></tbody>
+				</table>
+			</div>
+		</div>
+		<script src="//cdn.bootcss.com/jquery/3.1.1/jquery.min.js"></script>
+		<script>
+			$("#search").click(function() {
+				$.ajax({
+					type: "get",
+					async: false,
+					url: "http://s.music.163.com/search/get/?s=" + $("#keyword").val() + "&limit=50&offset=0&type=1&src=lofter&filterDj=true",
+					dataType: "jsonp",
+					jsonp: "callback",
+					success: function(data) {
+						$('#list').html("");
+						$.each(data.result.songs, function(i, row) {
+							var artists = "";
+							$.each(row.artists, function(j, row2) {
+								artists += row2.name + " ";
+							});
+							$('#list').append('<tr onclick="play(\'' + row.audio + '\',\'' + row.album.picUrl + '\',\'' + escape(row.name) + '\')"><td>' + row.name + '</td><td>' + artists + '</td><td>' + row.album.name + '</td></tr>');
+						});
+					},
+					error: function() {
+						alert('加载失败');
+					}
+				});
+
+			});
+
+			function play(src, img, name) {
+				$(".left").css({
+					"background": "url('" + img + "') center 100%",
+					"background-size": "100% 100%"
+				});
+				$(".bg-blur").attr("src", img);
+				$(".album img").attr("src", img);
+				$(".left h2").text(unescape(name));
+				$("#jquery_jplayer").jPlayer("destroy");
+				$("#jquery_jplayer").jPlayer({
+					ready: function(event) {
+						$(this).jPlayer("setMedia", {
+							autoPlay: true,
+							title: name,
+							mp3: src
+						}).jPlayer("play");
+					},
+					supplied: "mp3",
+					useStateClassSkin: true,
+					autoBlur: false,
+					smoothPlayBar: true,
+					keyEnabled: true
+				});
+			}
+		</script>
+		<link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+		<script src="//cdn.bootcss.com/jplayer/2.9.2/jplayer/jquery.jplayer.min.js"></script>
+	</body>
+
+</html>
